@@ -1,26 +1,345 @@
 @import "tailwindcss";
 
+/*
+  Design tokens — single source of truth for colour, type, spacing and radii.
+  Do not hardcode hex values or arbitrary Tailwind values in components;
+  reference these tokens (bg-surface, text-fg-muted, etc.) instead.
+*/
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Background levels */
+  --color-bg: #0a0a0b;
+  --color-surface: #131316;
+  --color-surface-raised: #1a1a1e;
+
+  /* Foreground */
+  --color-fg: #f2f0ec;
+  --color-fg-muted: #a5a19a;
+  --color-fg-subtle: #8b877f;
+
+  /* Accent — single restrained gold, used sparingly */
+  --color-accent: #c9a961;
+  --color-accent-strong: #ddc07f;
+  --color-accent-fg: #14120c;
+
+  /* Borders */
+  --color-border: rgba(242, 240, 236, 0.1);
+  --color-border-strong: rgba(242, 240, 236, 0.2);
+
+  /* Status (used only for form feedback) */
+  --color-success: #7fb88f;
+  --color-error: #d98a7a;
+
+  /* Radii */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+
+  --container-max: 76rem;
+
+  /* Header glass treatment — dark (default) */
+  --header-grad-top: rgba(19, 19, 22, 0.92);
+  --header-grad-bottom: rgba(10, 10, 11, 0.86);
+  --header-inset-highlight: rgba(242, 240, 236, 0.07);
+  --header-shadow: rgba(0, 0, 0, 0.35);
+  --header-sheen: rgba(201, 169, 97, 0.4);
+
+  /*
+    Motion primitives (CSS-driven half — see lib/motion.ts for the GSAP
+    half). Named per PHASE_2_DESIGN.md §5. Reference these, don't hardcode
+    duration numbers in component classes.
+  */
+  --motion-ui-hover: 150ms;
+  --motion-theme-transition: 200ms;
+
+  /* Monospace data layer — the chosen distinct visual signature (§4/§6).
+     System stack, deliberately: zero additional font payload against an
+     already-over-budget JS/font weight (PHASE_1_AUDIT.md #7, #10). */
+  --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+  /* Same value as --color-fg-subtle, not a reduced-opacity tint: at the
+     data layer's small (11px) size, opacity dropped contrast to 3.35:1,
+     below AA's 4.5:1 for real (non-decorative) text — caught by axe-core
+     before shipping. Kept as its own token for semantic distinction even
+     though the value currently matches. */
+  --color-data-ink: #8b877f;
+}
+
+/*
+  Light theme overrides. Deliberately not a naive inversion: surfaces use a
+  warm off-white family (not stark white) and the accent gets a deeper,
+  more saturated gold so it still passes contrast as text on a light ground
+  — the brand gold used for filled buttons stays the same across themes.
+*/
+:root[data-theme="light"] {
+  --color-bg: #faf8f4;
+  --color-surface: #f1ede4;
+  --color-surface-raised: #e8e1d3;
+
+  --color-fg: #1a170f;
+  --color-fg-muted: #57503f;
+  --color-fg-subtle: #6f6858;
+
+  --color-accent: #7c5f18;
+  --color-accent-strong: #8f701f;
+  --color-accent-fg: #fffdf8;
+
+  --color-border: rgba(26, 23, 15, 0.1);
+  --color-border-strong: rgba(26, 23, 15, 0.2);
+
+  --header-grad-top: rgba(255, 253, 248, 0.9);
+  --header-grad-bottom: rgba(241, 237, 228, 0.82);
+  --header-inset-highlight: rgba(255, 255, 255, 0.65);
+  --header-shadow: rgba(30, 24, 8, 0.1);
+  --header-sheen: rgba(150, 116, 30, 0.35);
+
+  --color-data-ink: #6f6858;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-surface-raised: var(--color-surface-raised);
+  --color-fg: var(--color-fg);
+  --color-fg-muted: var(--color-fg-muted);
+  --color-fg-subtle: var(--color-fg-subtle);
+  --color-accent: var(--color-accent);
+  --color-accent-strong: var(--color-accent-strong);
+  --color-accent-fg: var(--color-accent-fg);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-success: var(--color-success);
+  --color-error: var(--color-error);
+  --color-data-ink: var(--color-data-ink);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+
   --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-fraunces);
+  --font-mono: var(--font-mono);
+
+  /* Data-layer / micro-label sizes, per PHASE_2_DESIGN.md §4 type scale */
+  --text-data-layer: 0.6875rem;
+  --text-data-layer--line-height: 1.4;
+  --text-data-layer--letter-spacing: 0.04em;
+
+  --text-display-1: clamp(2.75rem, 2rem + 3.2vw, 5rem);
+  --text-display-1--line-height: 1.02;
+  --text-display-1--letter-spacing: -0.02em;
+  --text-display-2: clamp(2.1rem, 1.6rem + 2vw, 3.25rem);
+  --text-display-2--line-height: 1.05;
+  --text-display-2--letter-spacing: -0.015em;
+  --text-headline: clamp(1.5rem, 1.3rem + 0.8vw, 2rem);
+  --text-headline--line-height: 1.15;
+  --text-body-lg: 1.1875rem;
+  --text-body-lg--line-height: 1.6;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  color-scheme: dark;
+}
+
+html[data-theme="light"] {
+  color-scheme: light;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  transition:
+    background-color var(--motion-theme-transition) ease,
+    color var(--motion-theme-transition) ease;
+}
+
+/*
+  Layered explicitly as `base` (matching Tailwind's own
+  `@layer theme, base, components, utilities` order), unlike the plain
+  global rules around it: CSS cascade layers ignore specificity across
+  layers — an *unlayered* rule beats a *layered* one no matter how specific
+  the layered one is. Left unlayered, this was silently winning over every
+  `hover:border-*` / `focus-visible:border-*` Tailwind utility site-wide
+  (ProjectCard, ThemeToggle, form inputs, the dropdown nav, etc.) — the
+  utility classes were being generated correctly, they just never had a
+  chance to apply. Caught in Phase 7 by checking computed styles under a
+  real hover, not just visually — found via ProjectCard.tsx's own hover
+  state not doing anything and traced back here. `::selection` and
+  `:focus-visible` right below stay unlayered on purpose: nothing should
+  ever be able to accidentally out-rank the focus-visible ring, so it keeps
+  the strongest possible position in the cascade rather than being merely
+  "later than base".
+*/
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-fg);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+.skip-link {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 100;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+}
+
+@keyframes loader-reveal {
+  from {
+    opacity: 0;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/*
+  Premium glass header treatment: a soft vertical gradient over a blurred,
+  saturated backdrop, an inset top highlight (glass edge) and a thin gold
+  sheen line along the bottom. Values come from the --header-* tokens above
+  so light/dark stay in sync automatically.
+*/
+.header-glass {
+  position: relative;
+  background: linear-gradient(180deg, var(--header-grad-top) 0%, var(--header-grad-bottom) 100%);
+  backdrop-filter: blur(20px) saturate(150%);
+  -webkit-backdrop-filter: blur(20px) saturate(150%);
+  box-shadow:
+    inset 0 1px 0 var(--header-inset-highlight),
+    0 8px 30px -14px var(--header-shadow);
+}
+
+.header-glass::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--header-sheen), transparent);
+}
+
+/*
+  translateX(-50%) is baked into both keyframe steps (rather than applied
+  as a separate static transform on .dropdown-panel) because a CSS
+  `animation` fully replaces an element's `transform` for its duration —
+  it doesn't compose with an unrelated static `transform` declaration.
+  `forwards` below keeps that final centred value applied after the
+  animation completes, instead of the transform reverting once the
+  animation ends (its default behaviour).
+*/
+@keyframes dropdown-reveal {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+}
+
+.dropdown-panel {
+  animation: dropdown-reveal 0.16s ease-out forwards;
+  transform-origin: top center;
+}
+
+/* PageTransition.tsx — see that file for why this is enter-only. */
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-enter {
+  animation: page-enter 220ms ease-out;
+}
+
+/*
+  loading.tsx skeletons — a slow, gentle opacity pulse (not a spinner) so a
+  loading route reads as "this is actively resolving" rather than "this is
+  broken/empty" without competing for attention. Collapses to fully static
+  under reduced motion via the blanket rule below, same as everything else.
+*/
+@keyframes skeleton-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.skeleton-pulse {
+  animation: skeleton-pulse 1.8s ease-in-out infinite;
+}
+
+/*
+  Shared underline-reveal for text links (Phase 7 — Micro Interactions):
+  a transform-based reveal rather than background-size or text-decoration,
+  so it's cheap (compositor-only, no layout/paint) regardless of how many
+  links are on a page. Reinforces link affordance beyond colour alone —
+  colour-only hover cues are the one thing every "links" audit flags.
+  Applied on top of an element's own colour transition, never replacing it.
+*/
+.link-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--motion-ui-hover) ease;
+}
+
+/*
+  Two trigger paths: the element's own hover/focus (a plain inline link),
+  or an ancestor `.group`'s hover/focus (a title/label nested inside a
+  larger clickable card or link, e.g. ProjectCard) — without this second
+  path, hovering anywhere on such a card except the exact text itself would
+  lift/border-highlight the card but leave its title looking unaffected.
+*/
+.link-underline:hover::after,
+.link-underline:focus-visible::after,
+.group:hover .link-underline::after,
+.group:focus-visible .link-underline::after {
+  transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
