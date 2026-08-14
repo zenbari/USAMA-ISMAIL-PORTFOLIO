@@ -4,7 +4,7 @@ export const SITE: SiteConfig = {
   name: "Usama Ismail",
   shortName: "Usama",
   role: "Digital Marketing & Technical SEO",
-  url: "https://www.usamaismail.co.uk",
+  url: "https://usamaismail.co.uk",
   defaultTitle: "Usama Ismail — Digital Marketing & Technical SEO, London",
   description:
     "London-based digital marketer combining technical SEO audits, on-page optimisation, paid media and hands-on website development. MSc Management with Digital Marketing.",
