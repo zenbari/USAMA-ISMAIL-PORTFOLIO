@@ -16,11 +16,19 @@ export const metadata: Metadata = {
 };
 
 export default function Home() {
+  // Stable node identifier so ProfilePage.mainEntity can *reference* the
+  // Person node below rather than duplicating it — Google's Profile Page
+  // structured-data requirement is that mainEntity point to the entity the
+  // page is about; linking via @id (standard JSON-LD graph practice) keeps
+  // there being exactly one definition of the person, not two.
+  const personId = `${SITE.url}/#person`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Person",
+        "@id": personId,
         name: SITE.name,
         url: SITE.url,
         jobTitle: SITE.role,
@@ -36,6 +44,7 @@ export default function Home() {
         "@type": "ProfilePage",
         name: SITE.defaultTitle,
         url: SITE.url,
+        mainEntity: { "@id": personId },
       },
     ],
   };
